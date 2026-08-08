@@ -10,8 +10,6 @@ The project is designed for teams that want to centralise control over heterogen
 
 **Flexible Scheduling** — built‑in scheduler (using pg_cron or a custom daemon that calls dbliner.run_scheduler()) triggers tasks by time, by event (trigger), or upon completion of other tasks.
 
-**Centralised dblink Connection Management** — store and reuse connections to external databases (with encrypted passwords). Users can reference these connections in their own functions without handling connection parameters manually.
-
 **Pipelines** — chain tasks together with automatic execution order control (e.g., load raw data → run cleansing → rebuild mart).
 
 **Logging & Alerting** — every execution attempt is recorded in detail (start/finish time, status, row counts, error stack). On failure, the system can send notifications (email, Telegram).
