@@ -27,8 +27,6 @@ All DBLiner components reside in a dedicated schema dbliner. Main objects:
 
 **Scheduler Engine (run_scheduler())** — scans tasks, identifies those ready to run (by time or dependencies), and queues them considering priorities and concurrency limits.
 
-**Connection Manager (dblink_connections)** — stores named connections with credentials; provides get_connection(name) that returns a connection name for use in dblink_connect().
-
 **Execution Log (*_log)** — full history of all runs, including error traces and metadata.
 
 **System Views** — for monitoring active tasks, delays, errors, and performance.
