@@ -4,18 +4,19 @@ $func$
 declare
   l_dm_name text := 'AA_TEST_DM_1'; 
   l_sql_id bigint;
-begin                   
-  perform dbliner.add_dm_info(1 , l_dm_name, 'Root', 'Admin', 'root', 'datamarts.table_test', 'Test', 
+begin      
+  set search_path to dbliner, public;              
+  perform add_dm_info(1 , l_dm_name, 'Root', 'Admin', 'root', 'datamarts.table_test', 'Test', 
                               'Test', 0, 'JOB', 1, '1.0.0');
-  l_sql_id := dbliner.add_sql(l_dm_name, l_dm_name||'_1',                                               
+  l_sql_id := add_sql(l_dm_name, l_dm_name||'_1',                                               
                           'create table datamarts.table_3 as select * from core.global where id=:ID::int', 'CREATE', 'admin', '', 1);
-  perform dbliner.add_sql_param(l_sql_id, 'ID' , '1', 0, '');
-  l_sql_id := dbliner.add_sql(l_dm_name, l_dm_name||'_1',                                               
+  perform add_sql_param(l_sql_id, 'ID' , '1', 0, '');
+  l_sql_id := add_sql(l_dm_name, l_dm_name||'_1',                                               
                           'drop table if exists datamarts.table_test_3', 'DROP', 'admin', '', 1);
-  l_sql_id := dbliner.add_sql(l_dm_name, l_dm_name||'_1',                                               
+  l_sql_id := add_sql(l_dm_name, l_dm_name||'_1',                                               
                           'create table datamarts.table_test_3 as select * from datamarts.table_1', 'DROP', 'admin', '', 1);
   perform add_mapping(l_dm_name, 'DM@TEST_DM_1');                        
-  perform dbliner.add_scheduller(l_dm_name, 'DAY', 0, 0, 0, 0, 1, 999, 0);
+  perform add_scheduller(l_dm_name, 'DAY', 0, 0, 0, 0, 1, 999, 0);
 end;                           
 $func$ 
 
