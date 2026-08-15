@@ -42,7 +42,7 @@ create table dbliner.dm$dm_info(
 ; 
 
 create table dbliner.dm$dm_info_arch(  
-    arch_id bigserial,
+    arch_id bigint,
     arch_dttm timestamp default now(),
     id bigint, 
     dm_space bigint, --dm$space.id  
@@ -77,7 +77,7 @@ create table dbliner.dm$sql(
 ; 
    
 create table dbliner.dm$sql_arch( 
-  arch_id bigserial,
+  arch_id bigint,
   arch_dttm timestamp default now(),
   id bigint, 
   dm_name text,
@@ -104,7 +104,7 @@ create table dbliner.dm$sql_param(
 ; 
 
 create table dbliner.dm$sql_param_arch(
-   arch_id bigserial,
+   arch_id bigint,
    arch_dttm timestamp default now(),
    p_id bigint, --dm$sql.id 
    p_name text,
