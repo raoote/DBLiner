@@ -56,7 +56,7 @@ Analysts who need transparent control over mart calculation sequences.
 DevOps/SRE teams looking for a lightweight alternative to heavy‑weight orchestrators in microservice architectures.
 
 ## Requirements & Installation
-PostgreSQL 9+ or GreenPlum 6+ (with PL/pgSQL and dblink support).
+PostgreSQL 9+ or GreenPlum 6+ (with PL/pgSQL and dblink support, PXF support).
 
 pg_cron extension is recommended for built‑in scheduling (if unavailable, you can run dbliner.run_scheduler() from an external cron).
 
