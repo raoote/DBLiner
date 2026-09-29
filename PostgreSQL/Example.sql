@@ -2,31 +2,83 @@
 do                 
 $func$  
 declare
+  l_dm_name text := 'TEST_DM_1'; 
+  l_sql_id bigint;
+begin      
+  set search_path to dbliner, public;
+  --backup datamart configuration and delete 
+  perform delete_datamart(l_dm_name); 
+  --registry datamart
+  perform add_dm_info(1 , l_dm_name, 'Root', 'Admin', 'root', 'datamarts.table_test', 'Test', 
+                              'Test', 0, 'JOB', 1, '1.0.0');
+  -- add step 
+  l_sql_id := add_sql(l_dm_name, 
+                      l_dm_name||'_1',
+                      'drop table if exists datamarts.table_tmp', 
+                      'DROP', 
+                      'admin', 
+                      '', 
+                      1);
+  -- add step                              
+  l_sql_id := add_sql(l_dm_name, 
+                      l_dm_name||'_1',
+                      'create table datamarts.table_tmp as select * from core.global where id=:ID::int', 
+                      'CREATE', 
+                      'admin', 
+                      '', 
+                      1);  
+  -- add parameter default run
+  perform add_sql_param(l_sql_id, 'ID' , '1', 0, ''); 
+  --create scheduler default run
+  perform add_scheduller(l_dm_name, 'DAY', 0, 0, 2, 0, 1, 1, 0);
+end;                           
+$func$ 
+;
+
+--Create process
+do                 
+$func$  
+declare
   l_dm_name text := 'AA_TEST_DM_1'; 
   l_sql_id bigint;
 begin      
-  set search_path to dbliner, public;              
+  set search_path to dbliner, public; 
+  --backup datamart configuration and delete 
+  perform delete_datamart(l_dm_name); 
+  --registry datamart
   perform add_dm_info(1 , l_dm_name, 'Root', 'Admin', 'root', 'datamarts.table_test', 'Test', 
-                              'Test', 0, 'JOB', 1, '1.0.0');
+                              'Test', 0, 'JOB', 1, '1.0.0'); 
+  --add step
   l_sql_id := add_sql(l_dm_name, l_dm_name||'_1',                                               
-                          'create table datamarts.table_3 as select * from core.global where id=:ID::int', 'CREATE', 'admin', '', 1);
-  perform add_sql_param(l_sql_id, 'ID' , '1', 0, '');
+                          'drop table if exists datamarts.table_1', 'DROP', 'admin', '', 1);
+  --add step                        
   l_sql_id := add_sql(l_dm_name, l_dm_name||'_1',                                               
-                          'drop table if exists datamarts.table_test_3', 'DROP', 'admin', '', 1);
+                      'create table datamarts.table_1 as select count(*) from datamarts.table_tmp', 
+                      'CREATE', 
+                      'admin', 
+                      '', 
+                      1);
+  --add step      
   l_sql_id := add_sql(l_dm_name, l_dm_name||'_1',                                               
-                          'create table datamarts.table_test_3 as select * from datamarts.table_1', 'DROP', 'admin', '', 1);
-  perform add_mapping(l_dm_name, 'DM@TEST_DM_1');                        
-  perform add_scheduller(l_dm_name, 'DAY', 0, 0, 0, 0, 1, 999, 0);
-end;                           
+                          'drop table if exists datamarts.dm$data', 'DROP', 'admin', '', 1);
+  --add step
+  l_sql_id := add_sql(l_dm_name, l_dm_name||'_1',                                               
+                          'create table datamarts.dm$data as select * from datamarts.table_1', 'DROP', 'admin', '', 1);
+  --add a dependency on another process
+  perform add_mapping(l_dm_name, 'DM@TEST_DM_1'); 
+  --add scheduler  
+  perform add_scheduller(l_dm_name, 'DAY', 0, 0, 0, 0, 1, 999, 0);      
+end;                             
 $func$ 
+;
 
 --Create task
--- Edititng default parameters process
+-- Create a separate task to recalculate a storefront with parameters different from the default ones  
 do             
 $$            
 declare            
    l_sql text;
-begin
+begin  
    l_sql := 'do
 $func$
 declare
@@ -48,3 +100,4 @@ $func$';
    
 end;
 $$
+;      
