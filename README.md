@@ -68,3 +68,81 @@ To register your own task, simply call SELECT dbliner.register_task(...) with th
 The project is released under the MIT License — free for commercial use. Source code is open on GitHub, and contributions are welcome. Future plans include a web monitoring interface (via a separate REST service) and integrations with alerting systems (Slack, Opsgenie).
 
 **In summary**: DBLiner is the "skeleton" for your ETL processes. It handles the orchestration routine, while you remain in full control of the business logic. Simple, reliable, and green.
+
+# INSTALL AND RUNNING CORE
+## Install
+1. Download zip
+2. Unzip local folder
+3. Connect PostgreSQL database (psql, CerebroSQL, dbeaver, )
+4. Run script Install.sql
+
+## initial setup
+1. Registry "Division"
+
+Execute the command: 
+```
+select dbliner.add_division('<Division_name>', '<Division owner>', '<Division comment>');
+```
+
+2. Registry "Space"
+
+Execute the command: 
+```
+select dbliner.add_space('<Space name>', '<Space owner>', division_id, '<Space comment>', <Space_status>);
+``` 
+Where
+Space_status => 0 - enable, 1 - disabla
+
+## Launching the root function to start the kernel
+Configure the execution of the `run_scheduller` function using any convenient method (e.g., bash or an orchestrator).
+Recommendations:
+1. Execute the function every 1–3 seconds.
+2. Set the number of parallel executions per worker to 1–20.
+3. Use workers 1–8 to host data mart construction processes.
+4. Worker 9 is reserved for the task queue.
+
+### Example
+```
+select dbliner.run_scheduller(1);
+```
+### Example of launching from bash
+#### create sh script /home/user/scripts/run_scheduller.sh
+```
+#!/bin/bash
+ENV_SCHED=$1
+   
+/usr/bin/psql -h localhost -U user -d my_db -c "select dbliner.run_scheduller('$ENV_SCHED'::int);"
+```
+#### add cron
+```
+*/2 * * * * /bin/bash /home/user/scripts/run_postgres.sh "1" >> /home/user/scripts/dbliner_1_1.log 2>&1
+*/2 * * * * /bin/bash /home/user/scripts/run_postgres.sh "1" >> /home/user/scripts/dbliner_1_2.log 2>&1
+*/2 * * * * /bin/bash /home/user/scripts/run_postgres.sh "2" >> /home/user/scripts/dbliner_2_1.log 2>&1
+*/2 * * * * /bin/bash /home/user/scripts/run_postgres.sh "2" >> /home/user/scripts/dbliner_2_2.log 2>&1
+*/2 * * * * /bin/bash /home/user/scripts/run_postgres.sh "2" >> /home/user/scripts/dbliner_2_3.log 2>&1
+*/2 * * * * /bin/bash /home/user/scripts/run_postgres.sh "3" >> /home/user/scripts/dbliner_3.log 2>&1
+*/2 * * * * /bin/bash /home/user/scripts/run_postgres.sh "4" >> /home/user/scripts/dbliner_4.log 2>&1
+```
+
+## Starting tasks
+Configure the execution of the run_task function using any convenient method (e.g., bash or an orchestrator). Recommendations:
+
+Execute the function every 1–3 seconds.
+Run 1–20 concurrent instances.
+
+### Example
+```
+select dbliner.run_task();
+```
+### Example of launching from bash
+#### create sh script /home/user/scripts/run_tasks.sh
+```
+#!/bin/bash
+ 
+/usr/bin/psql -h localhost -U user -d my_db -c "select dbliner.run_task();"
+```
+#### add cron
+```
+*/2 * * * * /bin/bash /home/user/scripts/run_tasks.sh "1" >> /home/user/scripts/dbliner_tasks_1.log 2>&1
+*/2 * * * * /bin/bash /home/user/scripts/run_tasks.sh "1" >> /home/user/scripts/dbliner_tasks_2.log 2>&1
+```
