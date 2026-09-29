@@ -55,6 +55,57 @@ Analysts who need transparent control over mart calculation sequences.
 
 DevOps/SRE teams looking for a lightweight alternative to heavy‑weight orchestrators in microservice architectures.
 
+## 🚀 Big Data & Data Lakehouse Architecture (PXF & Hadoop Support)
+
+While **DBLiner** is lightweight and runs entirely inside the database, it is fully optimized for Enterprise-grade **Data Lakehouse** and **Big Data** ecosystems. Thanks to native support for **PXF (Platform Extension Framework)** in Greenplum clusters, DBLiner eliminates the need for heavy, external ETL/data-streaming software (like Apache Airflow, Apache NiFi, or dedicated Spark clusters) just to move data between Hadoop and your Data Warehouse.
+
+### Key Architectural Advantages
+
+* **True MPP ELT (Pushdown Execution):** DBLiner acts as the control plane on the master node, while the actual data heavy-lifting (reading from and writing to Hadoop/S3 via PXF) is executed **in parallel directly by Greenplum segment nodes**.
+* **No Network Bottlenecks:** Data streams directly from Hadoop DataNodes to Greenplum segments. It never passes through a single bottleneck server (like an Airflow worker or NiFi instance).
+* **Unified Control Plane:** Metadata, step-by-step logs (`dm$operation_log`), precise row counts, performance history, and dynamic session variables are captured in a single relational environment.
+
+### Production Use Cases
+
+Every interaction with **HDFS**, **Hive**, or **Cloud Object Storage (S3/MinIO)** is managed as a regular text-based SQL step within the `dm$sql` table.
+
+#### 1. High-Speed Parallel Data Ingestion
+Register a task that triggers parallel streaming from HDFS or Hive straight into your staging layer. DBLiner dynamically replaces session variables (e.g., modern business dates) at runtime using `replace_variable_in_sql`:
+
+```sql
+INSERT INTO staging.raw_application_logs
+SELECT * FROM pxf_hadoop.ext_hdfs_logs 
+WHERE log_date = :current_date;
+```
+
+#### 2. Federated Queries (On-the-Fly Analytics)
+Calculate analytical marts by joining "cold" historical data residing in Hadoop with "hot" operational tables inside Greenplum, without physically duplicating data:
+
+```sql
+INSERT INTO marts.customer_360_analytics
+SELECT t1.customer_id, t2.total_clicks 
+FROM dwh.customer_dim t1
+JOIN pxf_hadoop.ext_hive_clickstream t2 ON t1.customer_id = t2.user_id;
+```
+
+#### 3. Offloading to Cold Storage
+Orchestrate data archiving pipelines by pushing processed aggregation matrices back to Hadoop for downstream data science or external BI workloads:
+
+```sql
+INSERT INTO pxf_hadoop.ext_hive_archived_marts 
+SELECT * FROM target.monthly_financial_mart;
+```
+
+---
+
+### How DBLiner Enhances PXF Management
+
+When running massive Big Data scripts, DBLiner brings missing operational guardrails to PXF queries out of the box:
+1. **Concurrency Control:** Limits the number of simultaneous PXF streams to prevent overloading your Hadoop cluster network or NameNode.
+2. **Transient Error Retries:** Automatically handles transient network timeouts or cluster reboots during long-running HDFS operations.
+3. **Data Lineage & Auditing:** Since every single metadata statement is archived via `dbliner.delete_datamart(...)` before deployment, you maintain a bulletproof history of how your data pipeline logic evolved over time.
+
+
 ## Requirements & Installation
 PostgreSQL 9+ or GreenPlum 6+ (with PL/pgSQL and dblink support, PXF support).
 
